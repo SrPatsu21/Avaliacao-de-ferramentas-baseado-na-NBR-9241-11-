@@ -6,6 +6,11 @@
          db/sqlite3
          )  ; Importa as funções do módulo db, incluindo query-exec
 
+;; Definição de assoc-ref para trabalhar com association lists
+(define (assoc-ref alist key [default #f])
+  (let ([pair (assoc key alist)])
+    (if pair (cdr pair) default)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Configuração e inicialização do banco de dados SQLite
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
