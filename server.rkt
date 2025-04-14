@@ -45,9 +45,10 @@
 ;; Retorna as avaliações, opcionalmente filtrando por uma string no campo 'site'
 (define (buscar-avaliacoes [criterio ""])
   (if (or (not criterio) (string=? criterio ""))
-      (query-list db-conn "SELECT * FROM avaliacoes ORDER BY avaliado_em DESC")
-      (query-list db-conn "SELECT * FROM avaliacoes WHERE site LIKE ? ORDER BY avaliado_em DESC"
-                  (string-append "%" criterio "%"))))
+      (query-rows db-conn "SELECT * FROM avaliacoes ORDER BY avaliado_em DESC")
+      (query-rows db-conn
+            "SELECT * FROM avaliacoes WHERE site LIKE ? ORDER BY avaliado_em DESC"
+            (string-append "%" criterio "%"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Função para gerar linhas da tabela HTML (usada nas páginas de listagem/pesquisa)
@@ -184,6 +185,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (serve/servlet servlet
+               #:servlet-regexp #rx".*"
                #:servlet-path "/"
                #:port 8080
                #:launch-browser? #t)
