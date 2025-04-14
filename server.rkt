@@ -77,10 +77,11 @@
 
 (define (servlet request)
   (define valores (request-bindings request))
-  (define uri (request-uri request))
+  (define uri-path
+    (string-append "/" (string-join (map path/param-path (url-path (request-uri request))) "/")))
   (cond
     ;; Página principal: formulário para cadastrar avaliação
-    [(string=? uri "/")
+    [(string=? uri-path "/")
      (response/xexpr
       `(html
         (head (title "Avaliação de Sites - NBR 9241-11"))
@@ -100,7 +101,7 @@
         )))]
 
     ;; Processa o formulário e salva os dados no SQLite
-    [(string=? uri "/submit")
+    [(string=? uri-path "/submit")
      (define site       (assoc-ref valores "site"))
      (define eficacia   (string->number (assoc-ref valores "eficacia")))
      (define eficiencia (string->number (assoc-ref valores "eficiencia")))
@@ -118,7 +119,7 @@
         )))]
 
     ;; Página para listar todas as avaliações registradas
-    [(string=? uri "/list")
+    [(string=? uri-path "/list")
      (define avaliacoes (buscar-avaliacoes))
      (response/xexpr
       `(html
@@ -134,7 +135,7 @@
         )))]
 
     ;; Página de pesquisa: exibe formulário e, quando submetido, resultados filtrados
-    [(string=? uri "/search")
+    [(string=? uri-path "/search")
      (cond
        [(eq? (request-method request) 'post)
         (define criterio (assoc-ref valores "criterio"))
