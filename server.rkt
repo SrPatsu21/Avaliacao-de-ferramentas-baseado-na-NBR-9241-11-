@@ -2,7 +2,9 @@
 
 (require web-server/servlet
          web-server/servlet-env
-         db/sqlite3)
+         db/base
+         db/sqlite3
+         )  ; Importa as funções do módulo db, incluindo query-exec
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Configuração e inicialização do banco de dados SQLite
@@ -108,9 +110,7 @@
           (p "A avaliação para o site " ,site " foi registrada.")
           (p (a ([href "/"]) "Voltar para o formulário"))
           (p (a ([href "/list"]) "Listar Todas as Avaliações"))
-        )
-      ))
-    ]
+        )))]
 
     ;; Página para listar todas as avaliações registradas
     [(string=? uri "/list")
