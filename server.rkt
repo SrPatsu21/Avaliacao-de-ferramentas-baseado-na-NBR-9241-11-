@@ -45,10 +45,14 @@
 ;; Retorna as avaliações, opcionalmente filtrando por uma string no campo 'site'
 (define (buscar-avaliacoes [criterio ""])
   (if (or (not criterio) (string=? criterio ""))
-      (query-rows db-conn "SELECT * FROM avaliacoes ORDER BY avaliado_em DESC")
-      (query-rows db-conn
-            "SELECT * FROM avaliacoes WHERE site LIKE ? ORDER BY avaliado_em DESC"
-            (string-append "%" criterio "%"))))
+      (begin
+        ;;(displayln "Executando SQL: SELECT * FROM avaliacoes ORDER BY avaliado_em DESC")
+        (query-rows db-conn "SELECT * FROM avaliacoes ORDER BY avaliado_em DESC"))
+      (begin
+        ;;(printf (~a "SELECT * FROM avaliacoes WHERE site LIKE ? ORDER BY avaliado_em DESC" (string-append "%" criterio "%")))
+        (query-rows db-conn
+                    "SELECT * FROM avaliacoes WHERE site LIKE ? ORDER BY avaliado_em DESC"
+                    (string-append "%" criterio "%")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Função para gerar linhas da tabela HTML (usada nas páginas de listagem/pesquisa)
@@ -94,6 +98,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (servlet request)
+  ;; (print (request-method request))        ; mostra 'get ou 'post
+  ;; (displayln (request-uri request))           ; mostra a URL
+  ;; (displayln (request-bindings request))      ; mostra os campos do formulário
+
+
   (define valores (request-bindings request))
   (define uri-path
     (string-append "/" (string-join (map path/param-path (url-path (request-uri request))) "/")))
@@ -168,8 +177,8 @@
     ;; Página de pesquisa: exibe formulário e, quando submetido, resultados filtrados
     [(string=? uri-path "/search")
      (cond
-       [(eq? (request-method request) 'post)
-        (define criterio (assoc-ref valores "criterio"))
+       [(equal? (request-method request) #"POST")
+        (define criterio (assoc-ref valores 'criterio))
         (define avaliacoes (buscar-avaliacoes criterio))
         (response/xexpr
          `(html
