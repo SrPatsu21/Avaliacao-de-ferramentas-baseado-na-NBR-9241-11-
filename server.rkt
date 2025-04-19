@@ -226,5 +226,5 @@
 (serve/servlet servlet
                #:servlet-regexp #rx".*"
                #:servlet-path "/"
-               #:port 8081
+               #:port 8080
                #:launch-browser? #t)

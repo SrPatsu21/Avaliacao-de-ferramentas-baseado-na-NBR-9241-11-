@@ -30,7 +30,7 @@ Programa/aplicação web em racket que permite: avaliar por meio de um formulari
 
   - Servidor
 
-  - A chamada à função serve/servlet inicia o servidor na porta 8080 e tenta abrir o navegador para facilitar o teste.
+  - A chamada à função serve/servlet inicia o servidor na porta 8080 e tenta abrir o navegador.
 
 ## Instalar
 
