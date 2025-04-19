@@ -73,6 +73,23 @@
       (td ,avaliado-em))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utilitarios
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (obter-e-validar-numero valores chave)
+  (let* ([str (assoc-ref valores chave)])
+    (cond
+      [(not str)
+       (error (format "Campo obrigatório ausente: ~a" chave))]
+      [(not (string? str))
+       (error (format "Valor inválido em ~a: não é string" chave))]
+      [else
+       (define num (string->number str))
+       (if (and num (integer? num))
+           num
+           (error (format "Valor inválido em ~a: deve ser número inteiro" chave)))])))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementação do Servlet
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -89,11 +106,11 @@
         (body
           (h1 "Avaliação de Sites - NBR 9241-11")
           (form ([action "/submit"] [method "post"])
-            (p "Site URL: " (input ([type "text"] [name "site"])))
-            (p "Eficácia (0-10): " (input ([type "number"] [name "eficacia"] [min "0"] [max "10"])))
-            (p "Eficiência (0-10): " (input ([type "number"] [name "eficiencia"] [min "0"] [max "10"])))
-            (p "Satisfação (0-10): " (input ([type "number"] [name "satisfacao"] [min "0"] [max "10"])))
-            (p "Comentários: " (textarea ([name "comentarios"])))
+            (p "Site URL: " (input ([type "text"] [name "site"] [required "true"])))
+            (p "Eficácia (0-10): " (input ([type "number"] [name "eficacia"] [min "0"] [max "10"] [required "true"])))
+            (p "Eficiência (0-10): " (input ([type "number"] [name "eficiencia"] [min "0"] [max "10"] [required "true"])))
+            (p "Satisfação (0-10): " (input ([type "number"] [name "satisfacao"] [min "0"] [max "10"] [required "true"])))
+            (p "Comentários: " (textarea ([name "comentarios"] [required "true"])))
             (p (input ([type "submit"] [value "Enviar Avaliação"])))
           )
           (hr)
@@ -103,21 +120,34 @@
 
     ;; Processa o formulário e salva os dados no SQLite
     [(string=? uri-path "/submit")
-     (define site       (assoc-ref valores "site"))
-     (define eficacia   (string->number (assoc-ref valores "eficacia")))
-     (define eficiencia (string->number (assoc-ref valores "eficiencia")))
-     (define satisfacao (string->number (assoc-ref valores "satisfacao")))
-     (define comentarios (assoc-ref valores "comentarios"))
-     (inserir-avaliacao site eficacia eficiencia satisfacao comentarios)
-     (response/xexpr
-      `(html
-        (head (title "Avaliação Registrada"))
-        (body
-          (h1 "Avaliação Registrada com Sucesso!")
-          (p "A avaliação para o site " ,site " foi registrada.")
-          (p (a ([href "/"]) "Voltar para o formulário"))
-          (p (a ([href "/list"]) "Listar Todas as Avaliações"))
-        )))]
+    ;; (displayln ">>>> VALORES RECEBIDOS:")
+    ;; (for-each (λ (x)
+    ;;            (print (car x))
+    ;;            (display " => ")
+    ;;            (print (cdr x))
+    ;;            (display "\n")
+    ;;            )
+    ;;          valores)
+
+      ;; Converte para string e número
+      (define site       (assoc-ref valores 'site))
+      (define eficacia   (string->number (assoc-ref valores 'eficacia)))
+      (define eficiencia (string->number (assoc-ref valores 'eficiencia)))
+      (define satisfacao (string->number (assoc-ref valores 'satisfacao)))
+      (define comentarios (assoc-ref valores 'comentarios))
+
+      ;; Insere no banco
+      (inserir-avaliacao site eficacia eficiencia satisfacao comentarios)
+
+      (response/xexpr
+        `(html
+          (head (title "Avaliação Registrada"))
+          (body
+            (h1 "Avaliação Registrada com Sucesso!")
+            (p "A avaliação para o site " ,site " foi registrada.")
+            (p (a ([href "/"]) "Voltar para o formulário"))
+            (p (a ([href "/list"]) "Listar Todas as Avaliações"))
+          )))]
 
     ;; Página para listar todas as avaliações registradas
     [(string=? uri-path "/list")
@@ -167,8 +197,8 @@
              (p (a ([href "/"]) "Voltar ao formulário"))
            )))
         ])]
-    
-    ;; Página padrão – rota não encontrada
+
+    ;; Página padrão - rota não encontrada
     [else
      (response/xexpr
       `(html
@@ -187,5 +217,5 @@
 (serve/servlet servlet
                #:servlet-regexp #rx".*"
                #:servlet-path "/"
-               #:port 8080
+               #:port 8081
                #:launch-browser? #t)
